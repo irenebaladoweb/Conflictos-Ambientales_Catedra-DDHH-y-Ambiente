@@ -16,8 +16,26 @@
     <h1>Welcome to Leaflet to QGIS!</h1>
     <p>Draw shapes on the map and export them for use in QGIS.</p>
     <button id="export">Export to GeoJSON</button>
-    <div id="map"></div>
+    <input type="file" id="geojson-upload" accept=".geojson,application/json" />
 
+    <div id="map"></div>
+// Add GeoJSON upload functionality
+document.getElementById('geojson-upload').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(event) {
+        try {
+            var geojson = JSON.parse(event.target.result);
+            var layer = L.geoJSON(geojson);
+            layer.addTo(map);
+            map.fitBounds(layer.getBounds());
+        } catch (err) {
+            alert("Invalid GeoJSON file.");
+        }
+    };
+    reader.readAsText(file);
+});
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <!-- Leaflet Draw JS -->

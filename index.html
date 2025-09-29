@@ -1,102 +1,53 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cátedra DDHH y Ambiente</title>
-    <!-- Leaflet CSS -->
+    <title>Leaflet to QGIS</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
     <style>
-        #map { height: 600px; width: 100%; margin-top: 20px; }
-        body { font-family: Arial, sans-serif; }
-        .control-panel { margin-top: 20px; }
+        #map { height: 400px; width: 100%; margin-top: 20px; }
+        #export { margin: 20px 0; }
     </style>
 </head>
 <body>
-    <h2>Mapa de Conflictos Ambientales</h2>
-    <div class="control-panel">
-        <input type="file" id="geojson-upload" accept=".geojson,application/json" />
-        <label for="geojson-upload">Cargar archivo GeoJSON</label>
-        <button id="load-example">Cargar GeoJSON de ejemplo</button>
-    </div>
+    <h1>Welcome to Leaflet to QGIS!</h1>
+    <p>Draw shapes on the map and export them for use in QGIS.</p>
+    <button id="export">Export to GeoJSON</button>
     <div id="map"></div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <!-- Tu JS de simbología personalizada -->
-    <script src="leaflet-estilo_Version6.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <script>
-    // Inicializa el mapa centrado en el mundo
-   // Inicializa el mapa centrado en Uruguay
-    var map = L.map('map').setView([-32.5228, -55.7658], 6);
+        var map = L.map('map').setView([40.4168, -3.7038], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
 
-    // CartoDB Positron base (parecido a Google Maps)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CartoDB',
-        subdomains: 'abcd',
-        maxZoom: 19
-    }).addTo(map);
+        var drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
 
-    // Permite acceder al mapa desde leaflet-estilo_Version6.js
-    window.map = map;
-
-    // Permite limpiar capas previas
-    function clearMapLayers() {
-        map.eachLayer(function(layer) {
-            if (layer instanceof L.GeoJSON || layer instanceof L.Marker || layer instanceof L.LayerGroup) {
-                map.removeLayer(layer);
+        var drawControl = new L.Control.Draw({
+            edit: {
+                featureGroup: drawnItems
             }
         });
-    }
+        map.addControl(drawControl);
 
-    // Cargar GeoJSON desde input manual
-    document.getElementById('geojson-upload').addEventListener('change', function(e) {
-        var file = e.target.files[0];
-        if (!file) return;
-        var reader = new FileReader();
-        reader.onload = function(event) {
-            try {
-                var geojson = JSON.parse(event.target.result);
-                clearMapLayers();
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                    attribution: '&copy; OpenStreetMap &copy; CartoDB',
-                    subdomains: 'abcd',
-                    maxZoom: 19
-                }).addTo(map);
-                if(window.addGeoJsonWithStyle){
-                    addGeoJsonWithStyle(geojson);
-                    var bounds = L.geoJSON(geojson).getBounds();
-                    if (bounds.isValid()) map.fitBounds(bounds);
-                } else {
-                    alert("No se encontró la función de simbología. ¿Está bien cargado leaflet-estilo_Version6.js?");
-                }
-            } catch (err) {
-                alert("Archivo GeoJSON inválido.");
-            }
+        map.on(L.Draw.Event.CREATED, function (e) {
+            var layer = e.layer;
+            drawnItems.addLayer(layer);
+        });
+
+        document.getElementById('export').onclick = function () {
+            var data = drawnItems.toGeoJSON();
+            var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
+            var a = document.createElement('a');
+            a.href = 'data:' + convertedData;
+            a.download = 'data.geojson';
+            a.innerHTML = 'download GeoJSON';
+            a.click();
         };
-        reader.readAsText(file);
-    });
-
-    // Botón para cargar GeoJSON de ejemplo
-    document.getElementById('load-example').onclick = function() {
-        clearMapLayers();
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CartoDB',
-            subdomains: 'abcd',
-            maxZoom: 19
-        }).addTo(map);
-        fetch('Conflictos Ambientales.geojson')
-            .then(response => response.json())
-            .then(geojson => {
-                if(window.addGeoJsonWithStyle){
-                    addGeoJsonWithStyle(geojson);
-                    var bounds = L.geoJSON(geojson).getBounds();
-                    if (bounds.isValid()) map.fitBounds(bounds);
-                } else {
-                    alert("No se encontró la función de simbología. ¿Está bien cargado leaflet-estilo_Version6.js?");
-                }
-            })
-            .catch(() => alert('No se pudo cargar el archivo "Conflictos Ambientales.geojson"'));
-    };
     </script>
 </body>
 </html>

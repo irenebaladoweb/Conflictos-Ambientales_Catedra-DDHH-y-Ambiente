@@ -2,6 +2,68 @@
 "type": "FeatureCollection",
 "name": "Conflictos Ambientales",
 "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+const estilos = {
+  "Biodiversidad y conservación": "#0fe978",
+  "Combustibles fósiles y cambio climático - energía": "#010001",
+  "Conflictos por tierra y biomasa": "#d2b267",
+  "Gestión de basura": "#827e35",
+  "Gestión del agua": "#0eeff3",
+  "Industrias y utilidades": "#d0bebe",
+  "Infraestructura ": "#ff0000",
+  "Minería y extracción": "#ff7f00",
+  "Turismo y recreación": "#a817bb",
+  "Nuclear": "#ece920",
+  "Otros": "#fe00ae"
+};
+
+const iconos = {
+  "Biodiversidad y conservación": "icons/qgs_icon-FAA.svg",
+  "Combustibles fósiles y cambio climático - energía": "icons/qgs_Oil-facility.svg",
+  "Conflictos por tierra y biomasa": "icons/qgs_landuse.svg",
+  "Gestión de basura": "icons/qgs_waste-basket.svg",
+  "Gestión del agua": "icons/qgs_waterfall.svg",
+  "Industrias y utilidades": "icons/qgs_industry.svg",
+  "Infraestructura ": "icons/qgs_Infrastructure.svg",
+  "Minería y extracción": "icons/poi_mine.svg",
+  "Turismo y recreación": "icons/qgs_beach.svg",
+  "Nuclear": "icons/qgs_nuclear.svg",
+  "Otros": "icons/qgs_Conflict.svg"
+};
+
+// Carga tu geojson antes de este bloque (por ejemplo, con fetch o FileReader)
+// Supongamos que tienes un objeto llamado 'geojson' con tus datos:
+
+L.geoJSON(geojson, {
+  pointToLayer: function(feature, latlng) {
+    const categoria = feature.properties._Field9;
+    if (iconos[categoria]) {
+      return L.marker(latlng, {
+        icon: L.icon({
+          iconUrl: iconos[categoria],
+          iconSize: [32, 32],          // Ajusta según lo que necesites
+          iconAnchor: [16, 32],        // Ajusta si el icono no se centra bien
+          popupAnchor: [0, -32]
+        })
+      });
+    }
+    const color = estilos[categoria] || "#3388ff";
+    return L.circleMarker(latlng, {
+      radius: 8,
+      fillColor: color,
+      color: "#333",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.8
+    });
+  },
+  onEachFeature: function(feature, layer) {
+    let popupContent = "";
+    Object.keys(feature.properties).forEach(function(key){
+      popupContent += `<b>${key}:</b> ${feature.properties[key]}<br>`;
+    });
+    layer.bindPopup(popupContent);
+  }
+}).addTo(map);
 "features": [
 { "type": "Feature", "properties": { "id": 1, "_Field1": "Protección de Bañados del Este frente a ampliación del Canal Andreoni", "_Field3": "1985", "_Field4": null, "_Field5": "No", "_Field6": "1980", "_Field7": "Treinta y Tres / Rocha", "_Field8": null, "_Field9": "Infraestructura", "_Field10": "Infraestructura", "_Field11": null, "_Field12": "\"El momento de mayor expresión de este movimiento, a mediados de la década del 80, estuvo relacionado con el cuestionamiento a obras de infraestructura productiva para el riego de la producción arrocera- llevados adelante por el propio gobierno milita", "_Field13": null, "_Field14": null, "_Field15": "El estado sigue en el Listado Montreaux, nunca se restauró el daño ni cmpensó con las 100000 afectadas de humedales.", "_Field16": "Tesis Doctorado Carlos Santos (2019)", "_Field17": null, "G_atlas": null, "X": 815433.868, "Y": 6252286.706 }, "geometry": { "type": "Point", "coordinates": [ -53.592124223369495, -33.822613721227064 ] } },
 { "type": "Feature", "properties": { "id": 2, "_Field1": "Contaminación aérea por industria cementera.", "_Field3": "1987", "_Field4": "1993", "_Field5": "No", "_Field6": "1980", "_Field7": "Montevideo", "_Field8": "Belvedere y Sayago", "_Field9": "Industrias y utilidades", "_Field10": "Contaminación Industrial", "_Field11": null, "_Field12": "\"El conflicto fue colocado por los vecinos como un problema ambiental y desencadenó desde el gobierno departamental un proceso de monitoreo participativo de la calidad del aire en la zona circundante a la fábrica. Luego de 3 años de discusión, la Int", "_Field13": "Vecinos / Gob Departamental", "_Field14": null, "_Field15": "Luego de 3 años de discusión y monitoreo la industria fue clausurada y traladada hacia Lavalleja donde está en funcionamiento.", "_Field16": "Tesis Doctorado Carlos Santos (2019) y Santandreu y Gudynas (1998)", "_Field17": null, "G_atlas": null, "X": 571181.353, "Y": 6146389.744 }, "geometry": { "type": "Point", "coordinates": [ -56.221632177946127, -34.822273411352441 ] } },

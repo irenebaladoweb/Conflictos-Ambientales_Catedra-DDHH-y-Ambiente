@@ -1,44 +1,115 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Leaflet to QGIS</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <title>Leaflet avanzado</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-measure/dist/leaflet-measure.css"/>
     <style>
-        #map { height: 400px; width: 100%; margin-top: 20px; }
-        #export { margin: 20px 0; }
+        #map { height: 600px; width: 100%; margin-top: 20px; }
+        .toolbar { margin-bottom: 10px; }
+        .toolbar button { margin-right: 5px; }
     </style>
 </head>
 <body>
-    <h1>Welcome to Leaflet to QGIS!</h1>
-    <p>Draw shapes on the map and export them for use in QGIS.</p>
-    <button id="export">Export to GeoJSON</button>
+    <h1>Welcome to Leaflet avanzado!</h1>
+    <p>Barra de comandos: crea puntos, polígonos, edita, borra, zoom y mide distancias.</p>
+    <div class="toolbar">
+        <button id="draw-point">Añadir punto</button>
+        <button id="draw-polygon">Añadir polígono</button>
+        <button id="edit">Editar</button>
+        <button id="delete">Borrar</button>
+        <button id="zoom-in">Zoom +</button>
+        <button id="zoom-out">Zoom -</button>
+        <button id="measure">Medir distancia</button>
+        <button id="export">Exportar a GeoJSON</button>
+    </div>
     <div id="map"></div>
 
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Leaflet Draw JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <!-- Leaflet Measure -->
+    <script src="https://unpkg.com/leaflet-measure/dist/leaflet-measure.js"></script>
     <script>
-        var map = L.map('map').setView([40.4168, -3.7038], 6);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
+        // Inicializa el mapa centrado en Uruguay y con CartoDB Positron (estilo Google Maps)
+        var map = L.map('map').setView([-32.5228, -55.7658], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
         }).addTo(map);
 
+        // Grupo de objetos dibujados
         var drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
+        // Inicializa Draw con todas las opciones desactivadas (se activan con botones)
         var drawControl = new L.Control.Draw({
+            position: 'topright',
+            draw: {
+                polygon: false,
+                marker: false,
+                polyline: false,
+                rectangle: false,
+                circle: false,
+                circlemarker: false
+            },
             edit: {
-                featureGroup: drawnItems
+                featureGroup: drawnItems,
+                remove: false
             }
         });
         map.addControl(drawControl);
 
+        // Botones personalizados de la barra
+        document.getElementById('draw-point').onclick = function() {
+            new L.Draw.Marker(map, drawControl.options.draw).enable();
+        };
+        document.getElementById('draw-polygon').onclick = function() {
+            new L.Draw.Polygon(map, drawControl.options.draw).enable();
+        };
+        document.getElementById('edit').onclick = function() {
+            new L.EditToolbar.Edit(map, { featureGroup: drawnItems }).enable();
+        };
+        document.getElementById('delete').onclick = function() {
+            new L.EditToolbar.Delete(map, { featureGroup: drawnItems }).enable();
+        };
+        document.getElementById('zoom-in').onclick = function() {
+            map.zoomIn();
+        };
+        document.getElementById('zoom-out').onclick = function() {
+            map.zoomOut();
+        };
+
+        // Medición de distancias
+        var measureControl;
+        document.getElementById('measure').onclick = function() {
+            if (!measureControl) {
+                measureControl = new L.Control.Measure({
+                    position: 'topright',
+                    primaryLengthUnit: 'kilometers',
+                    secondaryLengthUnit: 'meters'
+                });
+                map.addControl(measureControl);
+            } else {
+                if (map.hasLayer(measureControl)) {
+                    map.removeControl(measureControl);
+                } else {
+                    map.addControl(measureControl);
+                }
+            }
+        };
+
+        // Añadir objetos dibujados al grupo
         map.on(L.Draw.Event.CREATED, function (e) {
             var layer = e.layer;
             drawnItems.addLayer(layer);
         });
 
+        // Exportar a GeoJSON
         document.getElementById('export').onclick = function () {
             var data = drawnItems.toGeoJSON();
             var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title> Cátedra de DDHH y Ambiente</title>
+    <title>Mapa Leaflet con GeoJSON y Simbología Personalizada</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
@@ -16,25 +16,44 @@
     <div class="control-panel">
         <input type="file" id="geojson-upload" accept=".geojson,application/json" />
         <label for="geojson-upload">Cargar archivo GeoJSON</label>
+        <button id="load-example">Cargar GeoJSON de ejemplo</button>
     </div>
     <div id="map"></div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <!-- Tu JS con simbología personalizada -->
-    <script src="leaflet-estilos_Version6.js"></script>
+    <script src="leaflet-estilo_Version6.js"></script>
     <script>
-    // Inicializa el mapa centrado en Uruguay
-    var map = L.map('map').setView([-32.5228, -55.7658], 6);
+    // Inicializa el mapa centrado en el mundo tipo Google Maps (usando CartoDB Positron, estilo claro tipo Google Maps)
+    var map = L.map('map').setView([0, 0], 2);
 
-    // Añade los mosaicos base
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+    // CartoDB Positron (parecido a Google Maps base)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 19
     }).addTo(map);
 
-    // Esta variable permite acceder al mapa desde leaflet-estilos.js
+    // Permite acceder al mapa desde leaflet-estilo_Version6.js
     window.map = map;
+
+    // Botón para cargar GeoJSON de ejemplo (Conflictos Ambientales.geojson)
+    document.getElementById('load-example').onclick = function() {
+        fetch('Conflictos Ambientales.geojson')
+            .then(response => response.json())
+            .then(geojson => {
+                if(window.addGeoJsonWithStyle){
+                  addGeoJsonWithStyle(geojson);
+                  // Centra el mapa al contenido del geojson
+                  var bounds = L.geoJSON(geojson).getBounds();
+                  if (bounds.isValid()) map.fitBounds(bounds);
+                } else {
+                  alert("No se encontró la función de simbología. ¿Está bien cargado leaflet-estilo_Version6.js?");
+                }
+            })
+            .catch(() => alert('No se pudo cargar el archivo "Conflictos Ambientales.geojson"'));
+    };
     </script>
 </body>
 </html>
-

@@ -106,14 +106,14 @@
       });
     }
 
-    // 7. Definición de la capa de conflictos ambientales
+    // 7. Definición de la capa de conflictos ambientales (usa _Field9)
     var conflictosLayer = L.geoJSON(null, {
       pointToLayer: function(feature, latlng) {
-        let field9Raw = feature.properties.field9;
+        let field9Raw = feature.properties._Field9;
         return L.marker(latlng, {icon: getConflictoDivIcon(field9Raw)});
       },
       onEachFeature: function (feature, layer) {
-        layer.bindPopup(`<strong>${feature.properties.field9 || ""}</strong>`);
+        layer.bindPopup(`<strong>${feature.properties._Field9 || ""}</strong>`);
       }
     });
 

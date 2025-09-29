@@ -8,10 +8,7 @@
   <style>
     #map { height: 100vh; }
     .toolbar { position:absolute; top:10px; left:10px; background:#fff; padding:10px; z-index:1000; }
-    /* Opcional: mejora visual de los iconos personalizados */
-    .conflicto-icon {
-      /* Puedes ajustar aquí estilos si lo necesitas */
-    }
+    .conflicto-icon {}
   </style>
 </head>
 <body>
@@ -24,63 +21,68 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
   <script>
-    // 1. Crear mapa (sin setView)
+    // 1. Crear mapa
     var map = L.map('map');
-
-    // 2. Centrar Uruguay
     var boundsUruguay = [[-34.98, -58.55], [-30.10, -53.05]];
     map.fitBounds(boundsUruguay);
 
-    // 3. Base OSM
+    // 2. Base OSM
     var baseOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // 4. Capas GeoJSON predeterminadas
+    // 3. Capas GeoJSON predeterminadas
     var departamentosLayer = L.geoJSON(null, {style: {color: 'blue'}});
     var riosLayer = L.geoJSON(null, {style: {color: 'cyan'}});
 
-    // 5. Diccionario de estilos por field9 (rutas con carpeta "iconos/")
+    // 4. Diccionario de estilos por field9 (todas las claves normalizadas a minúsculas)
     const conflictosEstilos = {
-      "Biodiversidad y conservación": {
+      "biodiversidad y conservación": {
         color: "#3EC70B", icon: "iconos/qgs_icon-FAA.svg", iconColor: "white"
       },
-      "Combustibles fósiles y cambio climático - energía": {
+      "combustibles fósiles y cambio climático - energía": {
         color: "#ffffff", icon: "iconos/qgs_Oil-facility.svg", iconColor: "white"
       },
-      "Conflictos por tierra y biomasa": {
+      "conflictos por tierra y biomasa": {
         color: "#F5F5DC", icon: "iconos/qgs_landuse.svg", iconColor: "white"
       },
-      "Gestión de basura": {
+      "gestión de basura": {
         color: "#8B4513", icon: "iconos/qgs_waste-basket.svg", iconColor: "white"
       },
-      "Gestión del agua": {
+      "gestión del agua": {
         color: "#00BFFF", icon: "iconos/qgs_waterfall.svg", iconColor: "white"
       },
-      "Industrias y utilidades": {
+      "industrias y utilidades": {
         color: "#808080", icon: "iconos/qgs_industry.svg", iconColor: "white"
       },
-      "Infraestructura": {
+      "infraestructura": {
         color: "#FF0000", icon: "iconos/qgs_Infrastructure.svg", iconColor: "white"
       },
-      "Minería y extracción": {
+      "minería y extracción": {
         color: "#FFA500", icon: "iconos/poi_mine.svg", iconColor: "white"
       },
-      "Turismo y recreación": {
+      "turismo y recreación": {
         color: "#8B00FF", icon: "iconos/qgs_beach.svg", iconColor: "white"
       },
-      "Nuclear": {
+      "nuclear": {
         color: "#FFFF00", icon: "iconos/qgs_icon-FAK.svg", iconColor: "black"
       },
-      "Otros": {
+      "otros": {
         color: "#FF69B4", icon: "iconos/qgs_Conflict.svg", iconColor: "white"
       }
     };
 
-    // 6. Función para crear el icono con fondo de color y SVG
-    function getConflictoDivIcon(field9) {
-      const estilo = conflictosEstilos[field9] || conflictosEstilos["Otros"];
+    // 5. Función para normalizar el valor de field9
+    function normalizaField9(valor) {
+      if (!valor) return "";
+      return valor.trim().toLowerCase();
+    }
+
+    // 6. Función para crear el icono con fondo y SVG
+    function getConflictoDivIcon(field9Raw) {
+      const field9 = normalizaField9(field9Raw);
+      const estilo = conflictosEstilos[field9] || conflictosEstilos["otros"];
       return L.divIcon({
         className: 'conflicto-icon',
         html: `
@@ -107,8 +109,8 @@
     // 7. Definición de la capa de conflictos ambientales
     var conflictosLayer = L.geoJSON(null, {
       pointToLayer: function(feature, latlng) {
-        let field9 = feature.properties.field9;
-        return L.marker(latlng, {icon: getConflictoDivIcon(field9)});
+        let field9Raw = feature.properties.field9;
+        return L.marker(latlng, {icon: getConflictoDivIcon(field9Raw)});
       },
       onEachFeature: function (feature, layer) {
         layer.bindPopup(`<strong>${feature.properties.field9 || ""}</strong>`);

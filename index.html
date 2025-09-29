@@ -22,20 +22,43 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
   <script>
-    // 1. Crear mapa
-    var map = L.map('map').setView([-34.9, -56.2], 12);
+    // 1. Crear mapa centrado en Uruguay
+    var map = L.map('map');
+    var boundsUruguay = [[-34.98, -58.55], [-30.10, -53.05]];
+    map.fitBounds(boundsUruguay);
 
     // 2. Base OSM
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    var baseOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // 3. Capa para dibujos y GeoJSON
+    // 3. Capas GeoJSON predeterminadas
+    // Ejemplo: cargar dos capas geojson (puedes cambiar por tus archivos)
+    var departamentosLayer = L.geoJSON(null, {style: {color: 'blue'}}); // vacía, se carga después
+    var riosLayer = L.geoJSON(null, {style: {color: 'cyan'}});
+
+    // Cargar archivos geojson locales/remotos
+    fetch('departamentos.json')
+      .then(res => res.json())
+      .then(data => departamentosLayer.addData(data));
+    fetch('rios.json')
+      .then(res => res.json())
+      .then(data => riosLayer.addData(data));
+
+    var overlays = {
+      "Departamentos": departamentosLayer,
+      "Ríos": riosLayer
+    };
+
+    // 4. Capa para dibujos y GeoJSON subidos
     var drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
-    // 4. Barra de herramientas de dibujo
+    // 5. Control de capas
+    L.control.layers({"OSM": baseOSM}, overlays, {collapsed: false}).addTo(map);
+
+    // 6. Barra de herramientas de dibujo
     var drawControl = new L.Control.Draw({
       edit: { featureGroup: drawnItems }
     });
@@ -46,7 +69,7 @@
       drawnItems.addLayer(layer);
     });
 
-    // 5. Cargar GeoJSON desde input
+    // 7. Cargar GeoJSON desde input
     document.getElementById('file-input').addEventListener('change', function(evt){
       var file = evt.target.files[0];
       var reader = new FileReader();
@@ -58,7 +81,7 @@
       reader.readAsText(file);
     });
 
-    // 6. Exportar a GeoJSON
+    // 8. Exportar a GeoJSON
     document.getElementById('export').addEventListener('click', function(){
       var data = drawnItems.toGeoJSON();
       var blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
@@ -69,10 +92,10 @@
       a.click();
     });
 
-    // 7. Barra de escala
+    // 9. Barra de escala
     L.control.scale().addTo(map);
 
-    // 8. Flecha norte (plugin simple)
+    // 10. Flecha norte (plugin simple)
     var north = L.control({position: "topright"});
     north.onAdd = function(map) {
       var div = L.DomUtil.create("div", "info legend");

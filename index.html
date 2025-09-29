@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Leaflet to QGIS</title>
+    <title>Conflictos Ambientales Uruguay</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <!-- Leaflet Draw CSS -->
@@ -13,28 +13,27 @@
     </style>
 </head>
 <body>
-    <h1>Welcome to Leaflet to QGIS!</h1>
+    <h1>Welcome to Cátedra de DDHH y Ambiente</h1>
     <p>Draw shapes on the map and export them for use in QGIS.</p>
     <button id="export">Export to GeoJSON</button>
     <input type="file" id="geojson-upload" accept=".geojson,application/json" />
     <div id="map"></div>
     <!-- Leaflet JS -->
+     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <!-- Leaflet Draw JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    <script>
-
-        document.getElementById('geojson-upload').addEventListener('change', function(e) {
+    <!-- Tu JS con la simbología personalizada -->
+    <script src="leaflet-estilos_Version6.js"></script>
+           document.getElementById('geojson-upload').addEventListener('change', function(e) {
     var file = e.target.files[0];
     if (!file) return;
     var reader = new FileReader();
     reader.onload = function(event) {
         try {
             var geojson = JSON.parse(event.target.result);
-            var layer = L.geoJSON(geojson);
-            layer.addTo(map);
-            map.fitBounds(layer.getBounds());
-        } catch (err) {
+           addGeoJsonWithStyle(geojson);
+map.fitBounds(L.geoJSON(geojson).getBounds());        } catch (err) {
             alert("Invalid GeoJSON file.");
         }
     };
@@ -78,5 +77,8 @@
             a.click();
         };
     </script>
+<script src="leaflet-estilos.js">
+    
+</script>
 </body>
 </html>

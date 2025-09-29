@@ -33,121 +33,91 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // 4. Capas GeoJSON predeterminadas (vacías al inicio)
+    // 4. Capas GeoJSON predeterminadas
     var departamentosLayer = L.geoJSON(null, {style: {color: 'blue'}});
     var riosLayer = L.geoJSON(null, {style: {color: 'cyan'}});
-    var conflictosLayer = // Diccionario de estilos por field9
-const conflictosEstilos = {
-  "Biodiversidad y conservación": {
-    color: "#3EC70B", // verde
-    icon: "qgs_icon-FAA.svg",
-    iconColor: "white"
-  },
-  "Combustibles fósiles y cambio climático - energía": {
-    color: "#ffffff", // blanco
-    icon: "qgs_Oil-facility.svg",
-    iconColor: "white"
-  },
-  "Conflictos por tierra y biomasa": {
-    color: "#F5F5DC", // beige
-    icon: "qgs_landuse.svg",
-    iconColor: "white"
-  },
-  "Gestión de basura": {
-    color: "#8B4513", // marrón
-    icon: "qgs_waste-basket.svg",
-    iconColor: "white"
-  },
-  "Gestión del agua": {
-    color: "#00BFFF", // celeste
-    icon: "qgs_waterfall.svg",
-    iconColor: "white"
-  },
-  "Industrias y utilidades": {
-    color: "#808080", // gris
-    icon: "qgs_industry.svg",
-    iconColor: "white"
-  },
-  "Infraestructura": {
-    color: "#FF0000", // rojo
-    icon: "qgs_Infrastructure.svg",
-    iconColor: "white"
-  },
-  "Minería y extracción": {
-    color: "#FFA500", // naranja
-    icon: "poi_mine.svg",
-    iconColor: "white"
-  },
-  "Turismo y recreación": {
-    color: "#8B00FF", // violeta
-    icon: "qgs_beach.svg",
-    iconColor: "white"
-  },
-  "Nuclear": {
-    color: "#FFFF00", // amarillo
-    icon: "qgs_icon-FAK.svg",
-    iconColor: "black"
-  },
-  "Otros": {
-    color: "#FF69B4", // rosado
-    icon: "qgs_Conflict.svg",
-    iconColor: "white"
-  }
-};
 
-// Función para crear el icono con fondo de color y SVG
-function getConflictoDivIcon(field9) {
-  const estilo = conflictosEstilos[field9] || conflictosEstilos["Otros"];
-  // El SVG se usa como imagen dentro del div
-  // Puedes ajustar el tamaño en width/height
-  return L.divIcon({
-    className: 'conflicto-icon',
-    html: `
-      <div style="
-        background: ${estilo.color}; 
-        width: 36px; 
-        height: 36px; 
-        border-radius: 50%; 
-        display: flex;
-        align-items: center; 
-        justify-content: center;
-        border: 2px solid #333;
-        ">
-        <img src="${estilo.icon}" 
-             style="width:22px; height:22px; filter: ${estilo.iconColor === 'white' ? 'brightness(0) invert(1)' : ''};" />
-      </div>
-    `,
-    iconSize: [36, 36],
-    iconAnchor: [18, 36],
-    popupAnchor: [0, -36]
-  });
-}
+    // 5. Diccionario de estilos por field9
+    const conflictosEstilos = {
+      "Biodiversidad y conservación": {
+        color: "#3EC70B", icon: "qgs_icon-FAA.svg", iconColor: "white"
+      },
+      "Combustibles fósiles y cambio climático - energía": {
+        color: "#ffffff", icon: "qgs_Oil-facility.svg", iconColor: "white"
+      },
+      "Conflictos por tierra y biomasa": {
+        color: "#F5F5DC", icon: "qgs_landuse.svg", iconColor: "white"
+      },
+      "Gestión de basura": {
+        color: "#8B4513", icon: "qgs_waste-basket.svg", iconColor: "white"
+      },
+      "Gestión del agua": {
+        color: "#00BFFF", icon: "qgs_waterfall.svg", iconColor: "white"
+      },
+      "Industrias y utilidades": {
+        color: "#808080", icon: "qgs_industry.svg", iconColor: "white"
+      },
+      "Infraestructura": {
+        color: "#FF0000", icon: "qgs_Infrastructure.svg", iconColor: "white"
+      },
+      "Minería y extracción": {
+        color: "#FFA500", icon: "poi_mine.svg", iconColor: "white"
+      },
+      "Turismo y recreación": {
+        color: "#8B00FF", icon: "qgs_beach.svg", iconColor: "white"
+      },
+      "Nuclear": {
+        color: "#FFFF00", icon: "qgs_icon-FAK.svg", iconColor: "black"
+      },
+      "Otros": {
+        color: "#FF69B4", icon: "qgs_Conflict.svg", iconColor: "white"
+      }
+    };
 
-// Definición de la capa
-var conflictosLayer = L.geoJSON(null, {
-  pointToLayer: function(feature, latlng) {
-    let field9 = feature.properties.field9;
-    return L.marker(latlng, {icon: getConflictoDivIcon(field9)});
-  },
-  onEachFeature: function (feature, layer) {
-    // Popup con nombre, descripción y tipo
-    var contenido = "";
-    if (feature.properties) {
-      contenido += `<strong>${feature.properties.nombre || "Conflicto"}</strong><br>`;
-      if (feature.properties.descripcion) contenido += `${feature.properties.descripcion}<br>`;
-      contenido += `<em>${feature.properties.field9 || ""}</em>`;
+    // 6. Función para crear el icono con fondo de color y SVG
+    function getConflictoDivIcon(field9) {
+      const estilo = conflictosEstilos[field9] || conflictosEstilos["Otros"];
+      return L.divIcon({
+        className: 'conflicto-icon',
+        html: `
+          <div style="
+            background: ${estilo.color}; 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 50%; 
+            display: flex;
+            align-items: center; 
+            justify-content: center;
+            border: 2px solid #333;
+            ">
+            <img src="${estilo.icon}" 
+                 style="width:22px; height:22px; filter: ${estilo.iconColor === 'white' ? 'brightness(0) invert(1)' : ''};" />
+          </div>
+        `,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -36]
+      });
     }
-    layer.bindPopup(contenido);
-  }
-});,
+
+    // 7. Definición de la capa de conflictos ambientales
+    var conflictosLayer = L.geoJSON(null, {
+      pointToLayer: function(feature, latlng) {
+        let field9 = feature.properties.field9;
+        return L.marker(latlng, {icon: getConflictoDivIcon(field9)});
+      },
       onEachFeature: function (feature, layer) {
-        if (feature.properties && feature.properties.nombre) {
-          layer.bindPopup(feature.properties.nombre);
+        var contenido = "";
+        if (feature.properties) {
+          contenido += `<strong>${feature.properties.nombre || "Conflicto"}</strong><br>`;
+          if (feature.properties.descripcion) contenido += `${feature.properties.descripcion}<br>`;
+          contenido += `<em>${feature.properties.field9 || ""}</em>`;
         }
+        layer.bindPopup(contenido);
       }
     });
 
-    // 5. Cargar archivos GeoJSON
+    // 8. Cargar archivos GeoJSON
     fetch('departamentos.json')
       .then(res => res.json())
       .then(data => departamentosLayer.addData(data));
@@ -160,7 +130,7 @@ var conflictosLayer = L.geoJSON(null, {
       .then(res => res.json())
       .then(data => conflictosLayer.addData(data));
 
-    // 6. Control de capas
+    // 9. Control de capas
     var overlays = {
       "Departamentos": departamentosLayer,
       "Ríos": riosLayer,
@@ -169,11 +139,11 @@ var conflictosLayer = L.geoJSON(null, {
 
     L.control.layers({"OSM": baseOSM}, overlays, {collapsed: false}).addTo(map);
 
-    // 7. Capa para dibujos
+    // 10. Capa para dibujos
     var drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
-    // 8. Herramientas de dibujo
+    // 11. Herramientas de dibujo
     var drawControl = new L.Control.Draw({
       edit: { featureGroup: drawnItems }
     });
@@ -184,7 +154,7 @@ var conflictosLayer = L.geoJSON(null, {
       drawnItems.addLayer(layer);
     });
 
-    // 9. Cargar GeoJSON desde input
+    // 12. Cargar GeoJSON desde input
     document.getElementById('file-input').addEventListener('change', function(evt){
       var file = evt.target.files[0];
       var reader = new FileReader();
@@ -196,7 +166,7 @@ var conflictosLayer = L.geoJSON(null, {
       reader.readAsText(file);
     });
 
-    // 10. Exportar a GeoJSON
+    // 13. Exportar a GeoJSON
     document.getElementById('export').addEventListener('click', function(){
       var data = drawnItems.toGeoJSON();
       var blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
@@ -207,10 +177,10 @@ var conflictosLayer = L.geoJSON(null, {
       a.click();
     });
 
-    // 11. Barra de escala
+    // 14. Barra de escala
     L.control.scale().addTo(map);
 
-    // 12. Flecha norte
+    // 15. Flecha norte
     var north = L.control({position: "topright"});
     north.onAdd = function(map) {
       var div = L.DomUtil.create("div", "info legend");

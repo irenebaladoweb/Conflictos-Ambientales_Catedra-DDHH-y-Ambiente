@@ -36,7 +36,7 @@
     var departamentosLayer = L.geoJSON(null, {style: {color: 'blue'}});
     var riosLayer = L.geoJSON(null, {style: {color: 'cyan'}});
 
-    // 4. Diccionario de estilos por field9 (todas las claves normalizadas a minúsculas)
+    // 4. Diccionario de estilos por Field9 (todas las claves normalizadas a minúsculas)
     const conflictosEstilos = {
       "biodiversidad y conservación": {
         color: "#3EC70B", icon: "iconos/qgs_icon-FAA.svg", iconColor: "white"
@@ -73,7 +73,7 @@
       }
     };
 
-    // 5. Función para normalizar el valor de field9
+    // 5. Función para normalizar el valor de Field9
     function normalizaField9(valor) {
       if (!valor) return "";
       return valor.trim().toLowerCase();
@@ -110,6 +110,12 @@
     var conflictosLayer = L.geoJSON(null, {
       pointToLayer: function(feature, latlng) {
         let field9Raw = feature.properties._Field9;
+        let field9Norm = normalizaField9(field9Raw);
+        // Para depuración: muestra en consola
+        console.log('Valor _Field9:', field9Raw, 'Normalizado:', field9Norm);
+        if (!conflictosEstilos[field9Norm]) {
+          console.warn('No se encontró estilo para:', field9Norm);
+        }
         return L.marker(latlng, {icon: getConflictoDivIcon(field9Raw)});
       },
       onEachFeature: function (feature, layer) {

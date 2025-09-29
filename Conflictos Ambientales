@@ -6,7 +6,7 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <style>
-        #map { height: 500px; width: 100%; margin-top: 20px; }
+        #map { height: 600px; width: 100%; margin-top: 20px; }
         body { font-family: Arial, sans-serif; }
         .control-panel { margin-top: 20px; }
     </style>
@@ -22,13 +22,13 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <!-- Tu JS con simbología personalizada -->
+    <!-- Tu JS de simbología personalizada -->
     <script src="leaflet-estilo_Version6.js"></script>
     <script>
-    // Inicializa el mapa centrado en el mundo tipo Google Maps (usando CartoDB Positron, estilo claro tipo Google Maps)
+    // Inicializa el mapa centrado en el mundo
     var map = L.map('map').setView([0, 0], 2);
 
-    // CartoDB Positron (parecido a Google Maps base)
+    // CartoDB Positron base (parecido a Google Maps)
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap &copy; CartoDB',
         subdomains: 'abcd',
@@ -38,18 +38,60 @@
     // Permite acceder al mapa desde leaflet-estilo_Version6.js
     window.map = map;
 
-    // Botón para cargar GeoJSON de ejemplo (Conflictos Ambientales.geojson)
+    // Permite limpiar capas previas
+    function clearMapLayers() {
+        map.eachLayer(function(layer) {
+            if (layer instanceof L.GeoJSON || layer instanceof L.Marker || layer instanceof L.LayerGroup) {
+                map.removeLayer(layer);
+            }
+        });
+    }
+
+    // Cargar GeoJSON desde input manual
+    document.getElementById('geojson-upload').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                var geojson = JSON.parse(event.target.result);
+                clearMapLayers();
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; OpenStreetMap &copy; CartoDB',
+                    subdomains: 'abcd',
+                    maxZoom: 19
+                }).addTo(map);
+                if(window.addGeoJsonWithStyle){
+                    addGeoJsonWithStyle(geojson);
+                    var bounds = L.geoJSON(geojson).getBounds();
+                    if (bounds.isValid()) map.fitBounds(bounds);
+                } else {
+                    alert("No se encontró la función de simbología. ¿Está bien cargado leaflet-estilo_Version6.js?");
+                }
+            } catch (err) {
+                alert("Archivo GeoJSON inválido.");
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // Botón para cargar GeoJSON de ejemplo
     document.getElementById('load-example').onclick = function() {
+        clearMapLayers();
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
         fetch('Conflictos Ambientales.geojson')
             .then(response => response.json())
             .then(geojson => {
                 if(window.addGeoJsonWithStyle){
-                  addGeoJsonWithStyle(geojson);
-                  // Centra el mapa al contenido del geojson
-                  var bounds = L.geoJSON(geojson).getBounds();
-                  if (bounds.isValid()) map.fitBounds(bounds);
+                    addGeoJsonWithStyle(geojson);
+                    var bounds = L.geoJSON(geojson).getBounds();
+                    if (bounds.isValid()) map.fitBounds(bounds);
                 } else {
-                  alert("No se encontró la función de simbología. ¿Está bien cargado leaflet-estilo_Version6.js?");
+                    alert("No se encontró la función de simbología. ¿Está bien cargado leaflet-estilo_Version6.js?");
                 }
             })
             .catch(() => alert('No se pudo cargar el archivo "Conflictos Ambientales.geojson"'));

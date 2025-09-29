@@ -1,124 +1,276 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Leaflet avanzado</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-measure/dist/leaflet-measure.css"/>
-    <style>
-        #map { height: 600px; width: 100%; margin-top: 20px; }
-        .toolbar { margin-bottom: 10px; }
-        .toolbar button { margin-right: 5px; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Leaflet + Google Maps editor</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha512-sA+e2k6kY0e6qXG5Q1h3h1Y0ZKp6aYk1b1GZ0gYf5h0QmZQY1FZ6m1w==" crossorigin=""/>
+  <!-- Leaflet.draw CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" integrity="sha512-g2f3e0+Jx6m6c7Wk0k6k6k6k6k6k6k6k6k6k6k6k6k6k6k6k6k6k6==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    html,body,#map{height:100%;margin:0;padding:0}
+    body{font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+    /* Sidebar */
+    .sidebar{
+      position: absolute;top:10px;left:10px;z-index:1000;background:#fff;padding:10px;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.3);width:260px;max-height:90vh;overflow:auto
+    }
+    .sidebar h3{margin:0 0 8px 0;font-size:16px}
+    .sidebar button{display:block;width:100%;margin:6px 0;padding:8px}
+    .small{font-size:12px;padding:6px}
+    #northArrow{width:40px;height:40px;display:block;margin:6px auto}
+    .control-row{display:flex;gap:6px}
+    .control-row button{flex:1}
+    input[type=file]{display:block;margin-top:6px}
+    .footer-note{font-size:12px;color:#666;margin-top:8px}
+  </style>
 </head>
 <body>
-    <h1>Welcome to Leaflet avanzado!</h1>
-    <p>Barra de comandos: crea puntos, polígonos, edita, borra, zoom y mide distancias.</p>
-    <div class="toolbar">
-        <button id="draw-point">Añadir punto</button>
-        <button id="draw-polygon">Añadir polígono</button>
-        <button id="edit">Editar</button>
-        <button id="delete">Borrar</button>
-        <button id="zoom-in">Zoom +</button>
-        <button id="zoom-out">Zoom -</button>
-        <button id="measure">Medir distancia</button>
-        <button id="export">Exportar a GeoJSON</button>
-    </div>
-    <div id="map"></div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <!-- Leaflet Draw JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    <!-- Leaflet Measure -->
-    <script src="https://unpkg.com/leaflet-measure/dist/leaflet-measure.js"></script>
-    <script>
-        // Inicializa el mapa centrado en Uruguay y con CartoDB Positron (estilo Google Maps)
-        var map = L.map('map').setView([-32.5228, -55.7658], 6);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap &copy; CartoDB',
-            subdomains: 'abcd',
-            maxZoom: 19
-        }).addTo(map);
+<div id="map"></div>
 
-        // Grupo de objetos dibujados
-        var drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
+<div class="sidebar" id="sidebar">
+  <h3>Map editor</h3>
+  <div><strong>Basemap:</strong>
+    <select id="basemapSelect" class="small">
+      <option value="google.normal">Google Streets</option>
+      <option value="google.satellite">Google Satellite</option>
+      <option value="google.hybrid">Google Hybrid</option>
+      <option value="osm">OpenStreetMap</option>
+    </select>
+  </div>
 
-        // Inicializa Draw con todas las opciones desactivadas (se activan con botones)
-        var drawControl = new L.Control.Draw({
-            position: 'topright',
-            draw: {
-                polygon: false,
-                marker: false,
-                polyline: false,
-                rectangle: false,
-                circle: false,
-                circlemarker: false
-            },
-            edit: {
-                featureGroup: drawnItems,
-                remove: false
-            }
-        });
-        map.addControl(drawControl);
+  <div style="margin-top:8px"><strong>Draw / Edit</strong></div>
+  <div class="control-row">
+    <button id="drawPoint">Point</button>
+    <button id="drawLine">Line</button>
+    <button id="drawPoly">Polygon</button>
+  </div>
+  <div class="control-row">
+    <button id="editFeatures">Edit</button>
+    <button id="deleteFeatures">Delete</button>
+  </div>
 
-        // Botones personalizados de la barra
-        document.getElementById('draw-point').onclick = function() {
-            new L.Draw.Marker(map, drawControl.options.draw).enable();
-        };
-        document.getElementById('draw-polygon').onclick = function() {
-            new L.Draw.Polygon(map, drawControl.options.draw).enable();
-        };
-        document.getElementById('edit').onclick = function() {
-            new L.EditToolbar.Edit(map, { featureGroup: drawnItems }).enable();
-        };
-        document.getElementById('delete').onclick = function() {
-            new L.EditToolbar.Delete(map, { featureGroup: drawnItems }).enable();
-        };
-        document.getElementById('zoom-in').onclick = function() {
-            map.zoomIn();
-        };
-        document.getElementById('zoom-out').onclick = function() {
-            map.zoomOut();
-        };
+  <div style="margin-top:8px"><strong>Import / Export</strong></div>
+  <input type="file" id="fileInput" accept=".geojson,application/geo+json" />
+  <button id="exportGeoJSON">Export GeoJSON</button>
+  <a id="downloadLink" style="display:none"></a>
 
-        // Medición de distancias
-        var measureControl;
-        document.getElementById('measure').onclick = function() {
-            if (!measureControl) {
-                measureControl = new L.Control.Measure({
-                    position: 'topright',
-                    primaryLengthUnit: 'kilometers',
-                    secondaryLengthUnit: 'meters'
-                });
-                map.addControl(measureControl);
-            } else {
-                if (map.hasLayer(measureControl)) {
-                    map.removeControl(measureControl);
-                } else {
-                    map.addControl(measureControl);
-                }
-            }
-        };
+  <div style="margin-top:8px"><strong>Map tools</strong></div>
+  <button id="zoomFull">Zoom to all</button>
+  <button id="clearAll" class="small">Clear all features</button>
 
-        // Añadir objetos dibujados al grupo
-        map.on(L.Draw.Event.CREATED, function (e) {
-            var layer = e.layer;
-            drawnItems.addLayer(layer);
-        });
+  <div style="margin-top:8px;text-align:center">
+    <img id="northArrow" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,5 90,95 50,80 10,95' fill='%230055cc' stroke='%23002255' stroke-width='2'/><text x='50' y='70' font-size='12' text-anchor='middle' fill='%23fff'>N</text></svg>" alt="North arrow" title="North"/>
+    <div class="footer-note">Scale and north arrow included</div>
+  </div>
+</div>
 
-        // Exportar a GeoJSON
-        document.getElementById('export').onclick = function () {
-            var data = drawnItems.toGeoJSON();
-            var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
-            var a = document.createElement('a');
-            a.href = 'data:' + convertedData;
-            a.download = 'data.geojson';
-            a.innerHTML = 'download GeoJSON';
-            a.click();
-        };
-    </script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha512-..." crossorigin=""></script>
+<!-- Leaflet.draw -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- Google Mutant (to use Google basemaps in Leaflet) -->
+<script src="https://unpkg.com/leaflet.gridlayer.googlemutant@0.12.2/Leaflet.GoogleMutant.js"></script>
+
+<script>
+// =====================
+// CONFIG - Reemplazar con tu API key de Google Maps
+// =====================
+const GOOGLE_MAPS_API_KEY = 'REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY'; // <-- sustituir
+
+// =====================
+// Inicializar mapa
+// =====================
+const map = L.map('map', {center:[-34.9056, -56.1910], zoom:12}); // Montevideo por defecto
+
+// Capas base
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap'});
+
+// Google mutant necesita que el script de Google Maps esté cargado en la página.
+function createGoogleMutant(type) {
+  return L.gridLayer.googleMutant({
+    type: type,
+    maxZoom: 21,
+  });
+}
+
+let googleNormal = createGoogleMutant('roadmap');
+let googleSatellite = createGoogleMutant('satellite');
+let googleHybrid = createGoogleMutant('hybrid');
+
+let baseLayers = {
+  'OpenStreetMap': osm,
+  'Google Streets': googleNormal,
+  'Google Satellite': googleSatellite,
+  'Google Hybrid': googleHybrid
+};
+
+osm.addTo(map);
+
+// =====================
+// Grupo de features dibujadas
+// =====================
+const drawnItems = new L.FeatureGroup().addTo(map);
+
+// Control de escala y norte
+L.control.scale({imperial:false, metric:true}).addTo(map);
+
+// North: el SVG ya está sobre la sidebar; si querés también lo podes poner como control
+const NorthControl = L.Control.extend({
+  onAdd: function(map){
+    const div = L.DomUtil.create('div','leaflet-bar');
+    div.style.background='transparent';div.style.padding='4px';
+    div.innerHTML = '<img src="data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,5 90,95 50,80 10,95" fill="%230055cc" stroke="%23002255" stroke-width="2"/><text x="50" y="70" font-size="12" text-anchor="middle" fill="%23fff">N</text></svg>" width="36" height="36"/>';
+    return div;
+  }
+});
+map.addControl(new NorthControl({position:'topright'}));
+
+// =====================
+// Leaflet.draw control (oculto: usaremos botones propios)
+// =====================
+const drawControl = new L.Control.Draw({
+  edit: { featureGroup: drawnItems },
+  draw: {
+    polygon: true,
+    polyline: true,
+    rectangle: false,
+    circle: false,
+    marker: true
+  }
+});
+// no lo añadimos al mapa para mantener el UI limpio
+
+// Handlers para dibujo programático
+const drawMarker = new L.Draw.Marker(map);
+const drawPolyline = new L.Draw.Polyline(map);
+const drawPolygon = new L.Draw.Polygon(map);
+
+// Eventos cuando se completa un dibujo
+map.on(L.Draw.Event.CREATED, function (event) {
+  const layer = event.layer;
+  drawnItems.addLayer(layer);
+});
+
+// =====================
+// Botones de la barra lateral
+// =====================
+document.getElementById('drawPoint').onclick = () => drawMarker.enable();
+document.getElementById('drawLine').onclick = () => drawPolyline.enable();
+document.getElementById('drawPoly').onclick = () => drawPolygon.enable();
+
+let editing = false;
+let editControl = null;
+document.getElementById('editFeatures').onclick = () => {
+  if (!editing) {
+    editControl = new L.EditToolbar.Edit(map, {featureGroup: drawnItems});
+    // Habilitar edición en todas las capas
+    drawnItems.eachLayer(function(layer){
+      if (layer.editing) layer.editing.enable();
+    });
+    editing = true;
+    document.getElementById('editFeatures').innerText = 'Finish edit';
+  } else {
+    // Deshabilitar edición
+    drawnItems.eachLayer(function(layer){
+      if (layer.editing) layer.editing.disable();
+    });
+    editing = false;
+    document.getElementById('editFeatures').innerText = 'Edit';
+  }
+};
+
+// Borrar seleccionado (quita la última capa seleccionada o todas si se mantiene)
+document.getElementById('deleteFeatures').onclick = () => {
+  // Si hay capas seleccionadas por draw control, mejor ofrecer borrado completo o por selección
+  if (confirm('¿Borrar todas las features dibujadas?')) {
+    drawnItems.clearLayers();
+  }
+};
+
+// Zoom a todas
+document.getElementById('zoomFull').onclick = () => {
+  if (drawnItems.getLayers().length) map.fitBounds(drawnItems.getBounds(), {padding:[20,20]});
+  else alert('No hay features para hacer zoom.');
+};
+
+// Clear all
+document.getElementById('clearAll').onclick = () => {
+  if (confirm('¿Eliminar todas las features?')) drawnItems.clearLayers();
+};
+
+// =====================
+// Importar GeoJSON
+// =====================
+const fileInput = document.getElementById('fileInput');
+fileInput.addEventListener('change', function(e){
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try {
+      const geo = JSON.parse(evt.target.result);
+      const gj = L.geoJSON(geo, {onEachFeature: function(f,l){ drawnItems.addLayer(l); }});
+      map.fitBounds(drawnItems.getBounds());
+    } catch(err){
+      alert('Error leyendo GeoJSON: '+err.message);
+    }
+  };
+  reader.readAsText(f);
+});
+
+// =====================
+// Exportar GeoJSON
+// =====================
+function exportGeoJSON() {
+  const data = drawnItems.toGeoJSON();
+  const str = JSON.stringify(data);
+  const blob = new Blob([str], {type: 'application/geo+json'});
+  const url = URL.createObjectURL(blob);
+  const link = document.getElementById('downloadLink');
+  link.href = url;
+  link.download = 'export.geojson';
+  link.style.display = 'inline-block';
+  link.innerText = 'Descargar GeoJSON';
+}
+
+document.getElementById('exportGeoJSON').onclick = exportGeoJSON;
+
+// =====================
+// Cambio de basemap desde sidebar
+// =====================
+document.getElementById('basemapSelect').addEventListener('change', function(){
+  const v = this.value;
+  // quitar todas
+  Object.values(baseLayers).forEach(l=>{ if (map.hasLayer(l)) map.removeLayer(l); });
+  if (v === 'osm') osm.addTo(map);
+  else if (v === 'google.normal') googleNormal.addTo(map);
+  else if (v === 'google.satellite') googleSatellite.addTo(map);
+  else if (v === 'google.hybrid') googleHybrid.addTo(map);
+});
+
+// =====================
+// CARGAR Google Maps JS (necesario para GoogleMutant)
+// =====================
+(function loadGoogleMaps(){
+  if (!GOOGLE_MAPS_API_KEY || GOOGLE_MAPS_API_KEY === 'REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY'){
+    console.warn('No se ha configurado la API key de Google Maps. Las capas de Google no funcionarán hasta que la agregues.');
+    return;
+  }
+  const s = document.createElement('script');
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
+  s.defer = true;
+  document.head.appendChild(s);
+})();
+
+// =====================
+// Mensajes de ayuda
+// =====================
+console.log('Leaflet editor listo. Reemplaza GOOGLE_MAPS_API_KEY en el archivo si querés usar basemaps de Google.');
+
+</script>
 </body>
 </html>

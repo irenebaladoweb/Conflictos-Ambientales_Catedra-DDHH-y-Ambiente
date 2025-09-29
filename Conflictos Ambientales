@@ -1,15 +1,40 @@
-/Leaflet_CanelonesTacu/
-  ConflicotsAmbientales.html
-  leaflet-estilos_Version6.js
-  /iconos/
-    qgs_icon-FAA.svg
-    qgs_Oil-facility.svg
-    qgs_landuse.svg
-    qgs_waste-basket.svg
-    qgs_waterfall.svg
-    qgs_industry.svg
-    qgs_Infrastructure.svg
-    poi_mine.svg
-    qgs_beach.svg
-    qgs_icon-FAK.svg
-    qgs_Conflict.svg
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title> Cátedra de DDHH y Ambiente</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 500px; width: 100%; margin-top: 20px; }
+        body { font-family: Arial, sans-serif; }
+        .control-panel { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Mapa de Conflictos Ambientales</h2>
+    <div class="control-panel">
+        <input type="file" id="geojson-upload" accept=".geojson,application/json" />
+        <label for="geojson-upload">Cargar archivo GeoJSON</label>
+    </div>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Tu JS con simbología personalizada -->
+    <script src="leaflet-estilos_Version6.js"></script>
+    <script>
+    // Inicializa el mapa centrado en Uruguay
+    var map = L.map('map').setView([-32.5228, -55.7658], 6);
+
+    // Añade los mosaicos base
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Esta variable permite acceder al mapa desde leaflet-estilos.js
+    window.map = map;
+    </script>
+</body>
+</html>
+

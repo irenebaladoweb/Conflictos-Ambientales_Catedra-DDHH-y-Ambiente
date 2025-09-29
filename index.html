@@ -8,6 +8,10 @@
   <style>
     #map { height: 100vh; }
     .toolbar { position:absolute; top:10px; left:10px; background:#fff; padding:10px; z-index:1000; }
+    /* Opcional: mejora visual de los iconos personalizados */
+    .conflicto-icon {
+      /* Puedes ajustar aquí estilos si lo necesitas */
+    }
   </style>
 </head>
 <body>
@@ -37,45 +41,44 @@
     var departamentosLayer = L.geoJSON(null, {style: {color: 'blue'}});
     var riosLayer = L.geoJSON(null, {style: {color: 'cyan'}});
 
-    // 5. Diccionario de estilos por field9
-   const conflictosEstilos = {
-  "Biodiversidad y conservación": {
-    color: "#3EC70B", icon: "iconos/qgs_icon-FAA.svg", iconColor: "white"
-  },
-  "Combustibles fósiles y cambio climático - energía": {
-    color: "#ffffff", icon: "iconos/qgs_Oil-facility.svg", iconColor: "white"
-  },
-  "Conflictos por tierra y biomasa": {
-    color: "#F5F5DC", icon: "iconos/qgs_landuse.svg", iconColor: "white"
-  },
-  "Gestión de basura": {
-    color: "#8B4513", icon: "iconos/qgs_waste-basket.svg", iconColor: "white"
-  },
-  "Gestión del agua": {
-    color: "#00BFFF", icon: "iconos/qgs_waterfall.svg", iconColor: "white"
-  },
-  "Industrias y utilidades": {
-    color: "#808080", icon: "iconos/qgs_industry.svg", iconColor: "white"
-  },
-  "Infraestructura": {
-    color: "#FF0000", icon: "iconos/qgs_Infrastructure.svg", iconColor: "white"
-  },
-  "Minería y extracción": {
-    color: "#FFA500", icon: "iconos/poi_mine.svg", iconColor: "white"
-  },
-  "Turismo y recreación": {
-    color: "#8B00FF", icon: "iconos/qgs_beach.svg", iconColor: "white"
-  },
-  "Nuclear": {
-    color: "#FFFF00", icon: "iconos/qgs_icon-FAK.svg", iconColor: "black"
-  },
-  "Otros": {
-    color: "#FF69B4", icon: "iconos/qgs_Conflict.svg", iconColor: "white"
-  }
-};
-    
-    
-     // 6. Función para crear el icono con fondo de color y SVG
+    // 5. Diccionario de estilos por field9 (rutas con carpeta "iconos/")
+    const conflictosEstilos = {
+      "Biodiversidad y conservación": {
+        color: "#3EC70B", icon: "iconos/qgs_icon-FAA.svg", iconColor: "white"
+      },
+      "Combustibles fósiles y cambio climático - energía": {
+        color: "#ffffff", icon: "iconos/qgs_Oil-facility.svg", iconColor: "white"
+      },
+      "Conflictos por tierra y biomasa": {
+        color: "#F5F5DC", icon: "iconos/qgs_landuse.svg", iconColor: "white"
+      },
+      "Gestión de basura": {
+        color: "#8B4513", icon: "iconos/qgs_waste-basket.svg", iconColor: "white"
+      },
+      "Gestión del agua": {
+        color: "#00BFFF", icon: "iconos/qgs_waterfall.svg", iconColor: "white"
+      },
+      "Industrias y utilidades": {
+        color: "#808080", icon: "iconos/qgs_industry.svg", iconColor: "white"
+      },
+      "Infraestructura": {
+        color: "#FF0000", icon: "iconos/qgs_Infrastructure.svg", iconColor: "white"
+      },
+      "Minería y extracción": {
+        color: "#FFA500", icon: "iconos/poi_mine.svg", iconColor: "white"
+      },
+      "Turismo y recreación": {
+        color: "#8B00FF", icon: "iconos/qgs_beach.svg", iconColor: "white"
+      },
+      "Nuclear": {
+        color: "#FFFF00", icon: "iconos/qgs_icon-FAK.svg", iconColor: "black"
+      },
+      "Otros": {
+        color: "#FF69B4", icon: "iconos/qgs_Conflict.svg", iconColor: "white"
+      }
+    };
+
+    // 6. Función para crear el icono con fondo de color y SVG
     function getConflictoDivIcon(field9) {
       const estilo = conflictosEstilos[field9] || conflictosEstilos["Otros"];
       return L.divIcon({
@@ -108,13 +111,7 @@
         return L.marker(latlng, {icon: getConflictoDivIcon(field9)});
       },
       onEachFeature: function (feature, layer) {
-        var contenido = "";
-        if (feature.properties) {
-          contenido += `<strong>${feature.properties.nombre || "Conflicto"}</strong><br>`;
-          if (feature.properties.descripcion) contenido += `${feature.properties.descripcion}<br>`;
-          contenido += `<em>${feature.properties.field9 || ""}</em>`;
-        }
-        layer.bindPopup(contenido);
+        layer.bindPopup(`<strong>${feature.properties.field9 || ""}</strong>`);
       }
     });
 

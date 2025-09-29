@@ -86,6 +86,9 @@ const GOOGLE_MAPS_API_KEY = 'REPLACE_WITH_YOUR_GOOGLE_MAPS_API_KEY'; // <-- sust
 // Inicializar mapa
 // =====================
 const map = L.map('map', {center:[-34.9056, -56.1910], zoom:12}); // Montevideo por defecto
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
 
 // Capas base
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap'});

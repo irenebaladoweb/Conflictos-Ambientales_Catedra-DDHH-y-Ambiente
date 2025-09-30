@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -36,14 +36,13 @@
     var departamentosLayer = L.geoJSON(null, {style: {color: 'blue'}});
     var riosLayer = L.geoJSON(null, {style: {color: 'cyan'}});
 
-    // 4. Diccionario de estilos por Field9 (todas las claves normalizadas a minúsculas)
+    // 4. Diccionario de estilos por Field9 (claves normalizadas a minúsculas)
     const conflictosEstilos = {
       "biodiversidad y conservación": {
         color: "#3EC70B", icon: "iconos/qgs_icon-FAA.svg", iconColor: "white"
       },
       "combustibles fósiles y cambio climático - energía": {
         color: "#ffffff", icon: "iconos/qgs_Oil-facility.svg", iconColor: "black"
-      }
       },
       "conflictos por tierra y biomasa": {
         color: "#F5F5DC", icon: "iconos/qgs_landuse.svg", iconColor: "white"
@@ -84,6 +83,12 @@
     function getConflictoDivIcon(field9Raw) {
       const field9 = normalizaField9(field9Raw);
       const estilo = conflictosEstilos[field9] || conflictosEstilos["otros"];
+      let iconFilter = '';
+      if (estilo.iconColor === 'white') {
+        iconFilter = 'brightness(0) invert(1)';
+      } else if (estilo.iconColor === 'black') {
+        iconFilter = 'brightness(0)';
+      }
       return L.divIcon({
         className: 'conflicto-icon',
         html: `
@@ -98,7 +103,7 @@
             border: 2px solid #333;
             ">
             <img src="${estilo.icon}" 
-                 style="width:22px; height:22px; filter: ${estilo.iconColor === 'white' ? 'brightness(0) invert(1)' : ''};" />
+                 style="width:22px; height:22px; filter: ${iconFilter};" />
           </div>
         `,
         iconSize: [36, 36],

@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -254,15 +254,15 @@
       leyendaDiv.innerHTML = html;
     }
 
-    // Mostrar/ocultar la leyenda según la capa Conflictos Ambientales
+    // Mostrar/ocultar la leyenda según la capa Conflictos Ambientales (sin problemas de mayúsculas/minúsculas)
     map.on('overlayadd', function(e) {
-      if (e.name === "Conflictos Ambientales") {
+      if (e.name.trim().toLowerCase() === "conflictos ambientales") {
         crearLeyenda();
         document.getElementById('leyenda').style.display = 'block';
       }
     });
     map.on('overlayremove', function(e) {
-      if (e.name === "Conflictos Ambientales") {
+      if (e.name.trim().toLowerCase() === "conflictos ambientales") {
         document.getElementById('leyenda').style.display = 'none';
       }
     });

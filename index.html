@@ -22,6 +22,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       font-size: 14px;
       min-width: 220px;
+      display: none; /* Oculta la leyenda por defecto */
     }
     .leyenda-row {
       display: flex;
@@ -153,7 +154,6 @@
       pointToLayer: function(feature, latlng) {
         let field9Raw = feature.properties._Field9;
         let field9Norm = normalizaField9(field9Raw);
-        // Para depuración: muestra en consola
         console.log('Valor _Field9:', field9Raw, 'Normalizado:', field9Norm);
         if (!conflictosEstilos[field9Norm]) {
           console.warn('No se encontró estilo para:', field9Norm);
@@ -253,7 +253,25 @@
       }
       leyendaDiv.innerHTML = html;
     }
-    crearLeyenda();
+
+    // Mostrar/ocultar la leyenda según la capa Conflictos Ambientales
+    map.on('overlayadd', function(e) {
+      if (e.name === "Conflictos Ambientales") {
+        crearLeyenda();
+        document.getElementById('leyenda').style.display = 'block';
+      }
+    });
+    map.on('overlayremove', function(e) {
+      if (e.name === "Conflictos Ambientales") {
+        document.getElementById('leyenda').style.display = 'none';
+      }
+    });
+
+    // Mostrar la leyenda si la capa está activa al cargar
+    if (map.hasLayer(conflictosLayer)) {
+      crearLeyenda();
+      document.getElementById('leyenda').style.display = 'block';
+    }
   </script>
 </body>
 </html>

@@ -254,15 +254,15 @@
       leyendaDiv.innerHTML = html;
     }
 
-    // Mostrar/ocultar la leyenda según la capa Conflictos Ambientales
+    // Mostrar/ocultar la leyenda según la capa conflictos ambientales
     map.on('overlayadd', function(e) {
-      if (e.name === "Conflictos Ambientales") {
+      if (e.name === "conflictos ambientales") {
         crearLeyenda();
         document.getElementById('leyenda').style.display = 'block';
       }
     });
     map.on('overlayremove', function(e) {
-      if (e.name === "Conflictos Ambientales") {
+      if (e.name === "conflictos ambientales") {
         document.getElementById('leyenda').style.display = 'none';
       }
     });

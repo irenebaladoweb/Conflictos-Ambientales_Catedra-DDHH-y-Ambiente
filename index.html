@@ -161,7 +161,7 @@
         return L.marker(latlng, {icon: getConflictoDivIcon(field9Raw)});
       },
       onEachFeature: function (feature, layer) {
-        // Popup personalizado con etiquetas y valores
+        // Etiquetas formales en el popup
         let popupContent = "<b>Detalles del Conflicto:</b><br>";
         if (feature.properties._Field9) {
           popupContent += `<b>Clasificación:</b> ${feature.properties._Field9}<br>`;

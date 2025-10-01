@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+     <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -22,7 +22,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
       font-size: 14px;
       min-width: 220px;
-      display: none; /* Oculta la leyenda por defecto */
+      display: none;
     }
     .leyenda-row {
       display: flex;
@@ -56,22 +56,18 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
   <script>
-    // 1. Crear mapa
     var map = L.map('map');
     var boundsUruguay = [[-34.98, -58.55], [-30.10, -53.05]];
     map.fitBounds(boundsUruguay);
 
-    // 2. Base OSM
     var baseOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // 3. Capas GeoJSON predeterminadas
     var departamentosLayer = L.geoJSON(null, {style: {color: 'blue'}});
     var riosLayer = L.geoJSON(null, {style: {color: 'cyan'}});
 
-    // 4. Diccionario de estilos por Field9 (claves normalizadas a minúsculas)
     const conflictosEstilos = {
       "biodiversidad y conservación": {
         color: "#3EC70B", icon: "iconos/qgs_icon-FAA.svg", iconColor: "white"
@@ -108,13 +104,11 @@
       }
     };
 
-    // 5. Función para normalizar el valor de Field9
     function normalizaField9(valor) {
       if (!valor) return "";
       return valor.trim().toLowerCase();
     }
 
-    // 6. Función para crear el icono con fondo y SVG
     function getConflictoDivIcon(field9Raw) {
       const field9 = normalizaField9(field9Raw);
       const estilo = conflictosEstilos[field9] || conflictosEstilos["otros"];
@@ -149,19 +143,17 @@
       });
     }
 
-    // 7. Definición de la capa de conflictos ambientales (usa _Field9)
+    // *** ESTA ES LA FUNCIÓN CORRECTA PARA LOS POPUP ***
     var conflictosLayer = L.geoJSON(null, {
       pointToLayer: function(feature, latlng) {
         let field9Raw = feature.properties._Field9;
         let field9Norm = normalizaField9(field9Raw);
-        console.log('Valor _Field9:', field9Raw, 'Normalizado:', field9Norm);
         if (!conflictosEstilos[field9Norm]) {
           console.warn('No se encontró estilo para:', field9Norm);
         }
         return L.marker(latlng, {icon: getConflictoDivIcon(field9Raw)});
       },
       onEachFeature: function (feature, layer) {
-        // Etiquetas formales en el popup
         let popupContent = "<b>Detalles del Conflicto:</b><br>";
         if (feature.properties._Field9) {
           popupContent += `<b>Clasificación:</b> ${feature.properties._Field9}<br>`;
@@ -179,7 +171,6 @@
       }
     });
 
-    // 8. Cargar archivos GeoJSON
     fetch('departamentos.json')
       .then(res => res.json())
       .then(data => departamentosLayer.addData(data));
@@ -192,7 +183,6 @@
       .then(res => res.json())
       .then(data => conflictosLayer.addData(data));
 
-    // 9. Control de capas
     var overlays = {
       "Departamentos": departamentosLayer,
       "Ríos": riosLayer,
@@ -201,11 +191,9 @@
 
     L.control.layers({"OSM": baseOSM}, overlays, {collapsed: false}).addTo(map);
 
-    // 10. Capa para dibujos
     var drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
-    // 11. Herramientas de dibujo
     var drawControl = new L.Control.Draw({
       edit: { featureGroup: drawnItems }
     });
@@ -216,7 +204,6 @@
       drawnItems.addLayer(layer);
     });
 
-    // 12. Cargar GeoJSON desde input
     document.getElementById('file-input').addEventListener('change', function(evt){
       var file = evt.target.files[0];
       var reader = new FileReader();
@@ -228,7 +215,6 @@
       reader.readAsText(file);
     });
 
-    // 13. Exportar a GeoJSON
     document.getElementById('export').addEventListener('click', function(){
       var data = drawnItems.toGeoJSON();
       var blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
@@ -239,10 +225,8 @@
       a.click();
     });
 
-    // 14. Barra de escala
     L.control.scale().addTo(map);
 
-    // 15. Flecha norte
     var north = L.control({position: "topright"});
     north.onAdd = function(map) {
       var div = L.DomUtil.create("div", "info legend");
@@ -251,7 +235,6 @@
     }
     north.addTo(map);
 
-    // 16. Leyenda visual de categorías _Field9
     function crearLeyenda() {
       const leyendaDiv = document.getElementById('leyenda');
       let html = `<b>Leyenda de Categorías (_Field9)</b><br>`;
@@ -268,7 +251,6 @@
       leyendaDiv.innerHTML = html;
     }
 
-    // Mostrar/ocultar la leyenda según la capa Conflictos Ambientales (sin problemas de mayúsculas/minúsculas)
     map.on('overlayadd', function(e) {
       if (e.name.trim().toLowerCase() === "conflictos ambientales") {
         crearLeyenda();
@@ -281,7 +263,6 @@
       }
     });
 
-    // Mostrar la leyenda si la capa está activa al cargar
     if (map.hasLayer(conflictosLayer)) {
       crearLeyenda();
       document.getElementById('leyenda').style.display = 'block';

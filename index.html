@@ -161,7 +161,21 @@
         return L.marker(latlng, {icon: getConflictoDivIcon(field9Raw)});
       },
       onEachFeature: function (feature, layer) {
-        layer.bindPopup(`<strong>${feature.properties._Field9 || ""}</strong>`);
+        // Popup personalizado con etiquetas y valores
+        let popupContent = "<b>Detalles del Conflicto:</b><br>";
+        if (feature.properties._Field9) {
+          popupContent += `<b>Clasificación:</b> ${feature.properties._Field9}<br>`;
+        }
+        if (feature.properties._Field1) {
+          popupContent += `<b>Conflicto:</b> ${feature.properties._Field1}<br>`;
+        }
+        if (feature.properties._Field2) {
+          popupContent += `<b>Fecha Inicio:</b> ${feature.properties._Field2}<br>`;
+        }
+        if (feature.properties._Field7) {
+          popupContent += `<b>Escala:</b> ${feature.properties._Field7}<br>`;
+        }
+        layer.bindPopup(popupContent);
       }
     });
 
